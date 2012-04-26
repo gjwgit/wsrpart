@@ -1,0 +1,14 @@
+Package: wsrpart
+Type: Package
+Title: Build weighted subspace rpart decision trees.
+Version: 1.0
+Date: 2012-03-22
+Author: Zhalama (siat), Graham Williams (siat)
+Maintainer: Graham Williams <Graham.Williams@togaware.com>
+Description: A collection of decision tree building functions are
+	defined, based around the concept of building each decision
+	tree on a random sample of data, and a weighted random sample
+	of the features-also known as random forests.  Functions are
+	provided to build multiple decision trees in parallel.
+License: GPL (>= 3)
+Depends: parallel, rpart
