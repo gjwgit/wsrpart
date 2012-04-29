@@ -1,4 +1,4 @@
-oob2.error.mrpart <- function(object)
+.oob2.error.mrpart <- function(object)
 {
   scores <- lapply(object, function(x) x$oob.scores)
 
@@ -27,7 +27,7 @@ oob2.error.mrpart <- function(object)
 }    
 
 
-oob1.error.mrpart <- function(forest,DS)
+.oob1.error.mrpart <- function(forest,DS)
 {
   for (i in 1:length(forest))
   {
