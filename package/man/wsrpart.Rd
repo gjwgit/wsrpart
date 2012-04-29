@@ -1,116 +1,145 @@
 \name{wsrpart}
 \alias{wsrpart}
+\alias{mwsrpart}
+\alias{mcwsrpart}
+\alias{clwsrpart}
 \title{
 
-  Build a single weighted subspaced decision tree.
+  Build a forest of weighted subspaced decision trees.
 
-}\description{
+}
+\description{
   
-  Build an \link{rpart} decision tree from the data and formula
-  contained in the dataset object (DS). The observations contained
-  within the dataset will be randomly subsetted (using a default sample
-  size of 70\%) to build the tree. Also, the variables used to build the
-  tree are a random subset of the available variables. The selection of
-  variables is weighted according to their correlation to the target.
+  Build \link{rpart} decision trees to construct a forest. The formula
+  and a random subset of the rows and columns of data are passed on to
+  \link{rpart} to build the decision trees.
 
-}\usage{
+}
+\usage{
 
-wsrpart(DS, nvars = trunc(log(DS$ninputs + 1, 2)), ...)
+wsrpart(formula, data, nvars, ...)
+
+mwsrpart(formula, data, ntrees, ...)
+
+mcwsrpart(formula, data, ntrees, ncores=detectCores(), ...)
+
+clwsrpart(formula, data, ntrees, servers, ...)
 
 }
 \arguments{
-  \item{DS}{
-    
-    A container (i.e., an environment or list) containing at least the
-    named objects \bold{data}, \bold{train}, \bold{inputs},
-    \bold{ninputs}, \bold{form}, \bold{target}.
-    
-  }\item{nvars}{
+  
+  \item{formula}{a formula, with a response but no interaction terms.}
 
-    Number of variables to choose. The default is Breiman's default for
-    random forests, being the integer less than or equal to
-    $log_2(ninputs) + 1$.
+  \item{data}{a data frame in which to interpret the variables named in
+          the formula.}
+  
+  \item{nvars}{number of variables to choose, with Breiman's default for
+    random forests being the integer less than or equal to
+    $log_2(ninputs) + 1$.}
+
+  \item{ntrees}{number of trees to build on each server.}
+  
+  \item{ncores}{number of cores on the current processor to use.}
+
+  \item{servers}{vector of server names or IP addresses.}
+
+  \item{\dots}{passed on to rpart.}
     
-  }\item{sample.size}{
-    
-    Training subset as a proportion.
-    
-  }\item{\dots}{
-    
-    Passed on to rpart.
-    
-  }
 }
 \details{
-  
-  The dataset container is often an \link{environment} in which we store
-  a dataset together with meta data associated with the dataset. For the
-  purposes of wsrpart the dataset itself is of course required. This
-  function uses the following
 
-  \bold{DS$data }{The actual dataset as a data frame.}
+  The base function is 'wsrpart'.  It is repsonsible for calling
+  \link{rpart} to build the decision trees. The observations contained
+  within the dataset are randomly sampled with replacement. The input
+  variables used to build the tree are also a random subset of the
+  available input variables. The selection of variables is weighted
+  according to their correlation to the target variable.
 
-  \bold{DS\$train }{A vector of integer indicies that represent a
-    training dataset from which the model is built.}
+  'mwsrpart' will build a forest of ntrees trees, each built by calling
+  'wsrpart'. The trees are built sequentially (i.e., one after the other
+  as a single process.
 
-  \bold{DS\$inputs }{A character vector (though could be numeric) that is
-    used to identify the input variables for the modelling.}
+  'mcwsrpart' builds a forest of trees over the multiple cores of one
+  server. It makes use of the cores of a server through the use of
+  \link{mcparallel} from \link{parallel}.
 
-  \bold{DS\$ninputs }{An integer recording the number of input
-    variables.}
-  
-  \bold{DS\$form }{}.
-
-  \bold{DS\$target}{}.
-
-  The function \link{setupDS} from \link{rattle} provides support for
-  incorporating meta data into the container.
+  'clwsrpart' builds multiple rpart decision trees over a cluster of
+  servers. It uses sockets through the use of makeCluster() to build the
+  rpart decision trees in parallel, using multile cores if available on
+  each server.
 
 }
 \value{
   
   A list:
 
-  \item{model }{An rpart object}
+  \item{model }{An rpart object.}
   
-  \item{vars.used }{Variables chosen to be used}
-
-  \item{oob.error }{The error rate on the out-of-bag data set}
+  \item{vars.used }{Variables chosen to be used.}
 
   \item{oob.scores }{The actual scores of the out-of-bag
-    observations. This can be later used in the context of a forest to
+    observations. This can be used later in the context of a forest to
     provide an out-of-bag error estimate for the forest of trees.}
+
+  \item{oob.error }{The error rate on the out-of-bag data set.}
 
 }
 \author{
   
-  Zhalama and Graham Williams
+  Zhalama and Graham Williams (SIAT)
   
 }
 \seealso{
   
-  \code{\link{help}}, \code{\link{selectVars}},
-  \code{\link{varWeights}}, \code{\link{setupDS}}
+  \code{\link{selectVars}} and \code{\link{varWeights}}.
 
 }
 \examples{
 
-require(rattle)
-if (compareVersion(packageDescription("rattle")$Version, "2.6.18") < 0)
-  stop("Requires rattle version at least 2.6.18.")
-dim(weatherAUS)
-weatherDS <- new.env()
-evalq({
-  data <- weatherAUS
-  target <- "RainTomorrow"
-  ignore <- c("Date", "Location", "RISK_MM")
-}, weatherDS)
-setupDataset(weatherDS)
-ls(weatherDS)
+# A simple example. Note that because we are randomly sampling both
+# the observations and input variables, we expect each run to generate
+# a different model.
 
-m1 <- wsrpart(weatherDS)
+m1 <- wsrpart(Species ~ ., iris, nvars=2)
 class(m1)
 m1
+m2 <- wsrpart(Species ~ ., iris, nvars=2)
+m2
+
+# Another example using a dataset from the rattle package and
+# the Dataset container from the container package. We first
+# construct a container for the dataset.
+
+if(require(rattle) && require(container))
+{
+  weatherDS <- Dataset$new(data=weather,
+                           target="RainTomorrow",
+                           risk="RISK_MM",
+                           ignore=c("Date", "Location"))
+  weatherDS
+}
+
+# Now build a couple of models.
+
+if (exists("weatherDS"))
+  with(weatherDS, wsrpart(form, data[train, vars]))
+
+if (exists("weatherDS"))
+  with(weatherDS, wsrpart(form, data[train, vars]))
+
+# We now have exapmles of the different optoins for building multiple
+# trees. First a sequential build of 5 trees on a single core.
+
+if (exists("weatherDS"))
+  system.time(m1 <- with(weatherDS, mwsrpart(form, data[train, vars], 50)))
+
+# Now use multiple cores on the single processor. This takes longer!!!
+# Probably the overhead of spawning lots of smaller processes. The
+# multicore version is useful for much larger model builds.
+
+if (exists("weatherDS"))
+  system.time(mc1 <- with(weatherDS, mcwsrpart(form, data[train, vars], 50)))
+
 }
 \keyword{ ~models }
 \keyword{ ~classif }
