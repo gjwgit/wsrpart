@@ -12,7 +12,7 @@
 }
 \usage{
 
-predict.mrpart(object, newdata, type=c("vector", "prob", "class", "votes"), ...)
+\method{predict}{mrpart}(object, newdata, type=c("class", "prob", "votes"), \dots)
 
 }
 \arguments{
@@ -38,11 +38,16 @@ predict.mrpart(object, newdata, type=c("vector", "prob", "class", "votes"), ...)
     of vote counts.
     
   }
+  \item{\dots}{
+
+    arguments passed on to predict.rpart
+    
+  }
 }
 \details{
 
   This function is a method for the generic function predict for class
-  `mrpart'. It can be invoked by calling `predict' for an object of the
+  'mrpart'. It can be invoked by calling `predict' for an object of the
   appropriate class, or directly by calling `predict.mrpart' regardless
   of the class of the object.
 
@@ -50,7 +55,7 @@ predict.mrpart(object, newdata, type=c("vector", "prob", "class", "votes"), ...)
 }
 \value{
 
-  The returned object depends on the argument `type':
+  The returned object depends on the argument 'type':
 
   \item{class:}{predicted classes (the classes with majority vote).}
 
@@ -59,11 +64,64 @@ predict.mrpart(object, newdata, type=c("vector", "prob", "class", "votes"), ...)
 
   \item{vote:}{matrix of vote counts (one column for each class and one
   row for each new observation); either in raw counts or in fractions (if
-  ‘norm.votes=TRUE’).}
+  'norm.votes=TRUE').}
   
 }
 \author{
 
-  Zhalama and Graham Williams
+  Zhalama and Graham Williams (SIAT)
+
+}
+\examples{
+# A simple example. We receive a different model each time and so
+# different predictions.
+
+table(predict(wsrpart(Species ~ ., iris, nvars=2), iris, type="class"))
+table(predict(wsrpart(Species ~ ., iris, nvars=2), iris, type="class"))
+
+# Compare with a straight rpart.
+
+table(predict(rpart(Species ~ ., iris), iris, type="class"))
+
+# Another example using a dataset from the rattle package and
+# the Dataset container from the container package. We first
+# construct a container for the dataset.
+
+if(require(rattle) && require(container))
+{
+  weatherDS <- Dataset$new(data=weather,
+                           target="RainTomorrow",
+                           risk="RISK_MM",
+                           ignore=c("Date", "Location"))
+}
+
+# Now build a model and use it to predict.
+
+if (exists("weatherDS"))
+  with(weatherDS, head(predict(wsrpart(form, data[train, vars]),
+                               data[test, vars], type="class")))
+
+# A table gives a better indication of the scores.
+
+if (exists("weatherDS"))
+  with(weatherDS, table(predict(wsrpart(form, data[train, vars]),
+                                data[test, vars], type="class")))
+
+# Build another model and use it to predict. We expect different
+# results.
+
+if (exists("weatherDS"))
+  with(weatherDS, table(predict(wsrpart(form, data[train, vars]),
+                                data[test, vars], type="class")))
+
+# For comparison build an rpart model.
+
+if (exists("weatherDS"))
+  with(weatherDS, table(predict(rpart(form, data[train, vars]),
+                                data[test, vars], type="class")))
+
+if (exists("weatherDS"))
+  with(weatherDS, head(predict(rpart(form, data[train, vars]),
+                               data[test, vars], type="class")))
 
 }
