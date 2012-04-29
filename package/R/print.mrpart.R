@@ -1,10 +1,20 @@
-print.mrpart <- function(x, ...)
+print.mrpart <-
+function(x, ...)
 {
-  cat("A multiple rpart model with", length(x),
-      ifelse(length(x) == 1, "tree.\n\n", "trees.\n\n"))
-  lapply(x, function(d) {cat("Variables Used: ", paste(d$vars.used, collapse=", "),
-                             ".\n\n", sep="")
-                         print(d$model)
-                         cat("\nOOB Error is ", round(d$oob.error, 3), ".\n\n", sep="")
-                         })
+  cat("A multiple rpart model with ", length(x), " tree",
+      ifelse(length(x) == 1, "", "s"), ".\n\n", sep="")
+
+  lapply(x, function(d)
+         {
+           # Work out the exdent for the formatted list of variable names.
+
+           exdent <- 19 + nchar(as.character(length(d$vars.used)))
+  
+           cat("Variables used (", length(d$vars.used), "): ",
+               paste(strwrap(paste(d$vars.used, collapse=", "),
+                             width=60, exdent=exdent), collapse="\n"),
+               ".\n\n", sep="")
+           print(d$model, ...)
+           cat("\nOOB Error: ", round(d$oob.error, 3), ".\n\n", sep="")
+         })
 }
