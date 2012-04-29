@@ -6,6 +6,7 @@ help:
 	check\tCheck for issues with hte packaging\n\
 	build\tGenerate wsrpart_1.0.tar.gz\n\
 	install\tInstall on the local machine\n\
+	update\tBuild and install the package.\n\
 	"
 
 .PHONY: check
@@ -19,3 +20,6 @@ build:
 .PHONY: install
 install:
 	R CMD INSTALL wsrpart_1.0.tar.gz
+
+.PHONY: update
+update: build install
