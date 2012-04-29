@@ -1,5 +1,5 @@
 mcwsrpart <-
-function(DS, ntrees, ncores=detectCores(), ...)
+function(formula, data, ntrees, ncores=detectCores(), ...)
 {
   if (missing(ntrees))
     stop("ntrees= must be provided as an argument")
@@ -23,14 +23,14 @@ function(DS, ntrees, ncores=detectCores(), ...)
   
   for (i in seq_len(nruns))
   {
-    jobs <- lapply(1:ncores, function(x) mcparallel(wsrpart(DS, ...)))
+    jobs <- lapply(1:ncores, function(x) mcparallel(wsrpart(formula, data, ...)))
 
     # Collect results.
   
     forest <- c(forest, mccollect(jobs, wait=TRUE))
   }
   
-  jobs <- lapply(seq_len(extra), function(x) mcparallel(wsrpart(DS, ...)))
+  jobs <- lapply(seq_len(extra), function(x) mcparallel(wsrpart(formula, data, ...)))
   forest <- c(forest, mccollect(jobs, wait=TRUE))
   forest <- Reduce(c, forest)
   
