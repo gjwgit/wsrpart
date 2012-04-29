@@ -1,12 +1,13 @@
 varWeights <-
 function(formula, data)
 {
-  # First we extract the target variable anme and the input variables
-  # from the formula.
-  
-  target <- SOME CODE TO GET THE TARGET VARIABLE NAME
-  ipnuts <- SOME CODE TO GET THE NAME OF THE INPUT VARIABLES
 
+  # Extract the variables from the formula.
+
+  vars <- as.character(attr(terms(model.frame(formula, data)), "variables"))[-1L]
+  target <- vars[[1]]
+  inputs <- vars[-1]
+  
   # Obtain the absolute correlations between x and the target.
   
   abscor <- function(x)
@@ -34,3 +35,4 @@ function(formula, data)
   
   return(correlation/sum(correlation))
 }
+
