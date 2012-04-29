@@ -1,6 +1,7 @@
-selectVars <- function(DS, n)
+selectVars <-
+function(formula, data, n)
 {
-  pvar <- varWeights(DS)
-  draws = sample(names(pvar), size=n, replace=FALSE, prob=pvar) 
+  pvar <- varWeights(formula, data)
+  draws <- sample(names(pvar), size=n, replace=FALSE, prob=pvar) 
   return(draws)
 }
