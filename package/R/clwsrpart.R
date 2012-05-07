@@ -6,5 +6,7 @@ function(formula, data, ntrees, servers, ...)
   clusterEvalQ(cl, require(wsrpart))
   clusterExport(cl, as.character(substitute(data)))
   forest <- clusterCall(cl, mcwsrpart, formula, data, ntrees, ...)
-  return(Reduce(c, forest))
+  result <- Reduce(c, forest)
+  class(result) <- "mrpart"
+  return(result)
 }
