@@ -4,10 +4,14 @@ function(object, newdata, type=c("class", "prob", "votes"), ...)
   if (!inherits(object, "mrpart")) 
     stop("Not a legitimate multile rpart object")
 
-  scores <- sapply(object, function(m) predict(m$model, newdata, type="class"))
+  if (missing(type)) type <- "class"
+  
+  scores <- sapply(object, function(m) predict(m$model, newdata, type = "class"))
 
-  scorelist<-data.frame(id=rep(row.names(scores), times=ncol(scores)),
-                        row.names=NULL, class=as.vector(scores))
+  scorelist <- list(id = rep(row.names(scores), times = ncol(scores)),
+                    class = as.vector(scores))
+  
+  scorelist$id <- as.integer(scorelist$id)
   
   votes <- table(scorelist)
 
@@ -16,7 +20,7 @@ function(object, newdata, type=c("class", "prob", "votes"), ...)
 
   scoremat <- matrix(as.vector(votes), nrow=nrow(scores))
   row.names(scoremat) <- row.names(scores)
-  colnames(scoremat) <- levels(scorelist$class)
+  colnames(scoremat) <- levels(as.factor(scorelist$class))
 
   # Build the class list. Ensure the result is a vector and the values
   # are a factor. This needs to mimic what rpart does. But how is that
@@ -40,7 +44,5 @@ function(object, newdata, type=c("class", "prob", "votes"), ...)
   else if (type == "votes")
     return(votes)
   else
-    return(list(class = classlab,
-                prob = prob,
-                votes = votes))
+    return(list(class = classlab, prob = prob, votes = votes))
 }
