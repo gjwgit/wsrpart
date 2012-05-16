@@ -1,5 +1,5 @@
 mcwsrpart <-
-function(formula, data, ntrees, ncores=detectCores(), ...)
+function(formula, data, ntrees=50, ncores=detectCores(), ...)
 {
   if (missing(ntrees))
     stop("ntrees= must be provided as an argument")
