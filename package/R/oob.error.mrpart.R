@@ -1,48 +1,29 @@
-.oob2.error.mrpart <- function(object)
-{
-  scores <- lapply(object, function(x) x$oob.scores)
+oob.error.mrpart <- function(object, data, formula)
+ {
+   oob <- sapply(object,function(m) m$oob.scores)
 
-  whichClassMax <- function(x)
-  {
-    names(which.max(x))
-  }
+   oobscolist <- list(id = rownames(Reduce(rbind, oob)),
+                      class = apply(Reduce(rbind, oob), 1,
+                        function(x)names(which.max(x))))
 
-  mapToMaxClass <- function(x)
-  {
-    data.frame(id=row.names(x),
-               row.names=NULL,
-               class=apply(x, 1, whichClassMax))
-  }
+   oobscolist$id <- as.integer(oobscolist$id)
 
+   oobvotes <- table(oobscolist)
 
-  classes <- lapply(scores, mapToMaxClass)
+   oobmat <- matrix(as.vector(oobvotes),
+                    nrow=length(levels(as.factor(oobscolist$id))))
+   row.names(oobmat) <- levels(as.factor(oobscolist$id))
+   colnames(oobmat) <- levels(as.factor(oobscolist$class))
 
-  class.list <- Reduce(rbind, classes)
+   oobclass <- apply(oobmat, 1, function(x)names(which.max(x)))
 
-  class.table <- table(class.list)
+   # Get target variable
 
-  # Actually want to return the oob error measure, not the table.
-  
-  return(class.table)
-}    
+   vars <- as.character(attr(terms(model.frame(formula, data)), "variables"))[-1L]
+   target <- vars[[1]]
 
+   forest.oob.error <-
+     sum(oobclass != data[as.numeric(names(oobclass)), target])/length(oobclass)
 
-.oob1.error.mrpart <- function(forest,DS)
-{
-  for (i in 1:length(forest))
-  {
-    osi <- data.frame(id=row.names(forest[[i]]$oob.scores),
-                      row.names=NULL,
-                      class=apply(forest[[i]]$oob.scores, 1,
-                        function(r) names(which.max(r))))
-    if (i == 1)  flist <- osi else 
-    flist <- rbind(flist, osi)
-  }
-  tb <- table(flist)
-  mat <- matrix(as.vector(tb), nrow=length(levels(flist$id)))
-  row.names(mat) <- levels(flist$id)
-  colnames(mat) <- levels(flist$class)
-  res <- apply(mat, 1, function(x)names(which.max(sort(x))))
-  forest.oob.error <- sum(res != DS$data[as.numeric(names(res)), DS$target], na.rm = TRUE)/(length(res)-length(DS$data[as.numeric(names(res)), DS$target][is.na(DS$data[as.numeric(names(res)), DS$target])]))
-  return(forest.oob.error)
+   return(forest.oob.error)
 }
