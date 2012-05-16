@@ -1,3 +1,5 @@
+strength <- function(object, data, formula, ...) UseMethod("strength")
+
 strength.mrpart <- function(object, data, formula)
 {
 
@@ -5,6 +7,7 @@ strength.mrpart <- function(object, data, formula)
                             "variables"))[-1L]
   target <- vars[[1]]
 
+  
   oob <- sapply(object, function(m) m$oob.scores)
 
   oobscolist <- list(id=rownames(Reduce(rbind, oob)),
@@ -20,6 +23,7 @@ strength.mrpart <- function(object, data, formula)
   row.names(oobmat) <- levels(as.factor(oobscolist$id))
   colnames(oobmat) <- levels(as.factor(oobscolist$class))
 
+  
   pY <- sapply(row.names(oobmat),
                function(x) oobmat[x, data[x, target]]/sum(oobmat[x,]))
 
