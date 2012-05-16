@@ -19,11 +19,11 @@
 
 wsrpart(formula, data, nvars, ...)
 
-mwsrpart(formula, data, ntrees, ...)
+mwsrpart(formula, data, ntrees=50, ...)
 
-mcwsrpart(formula, data, ntrees, ncores=detectCores(), ...)
+mcwsrpart(formula, data, ntrees=50, ncores=detectCores(), ...)
 
-clwsrpart(formula, data, ntrees, servers, ...)
+clwsrpart(formula, data, ntrees=50, servers, ...)
 
 }
 \arguments{
