@@ -1,5 +1,5 @@
 clwsrpart <-
-function(formula, data, ntrees, servers, ...)
+function(formula, data, ntrees=50, servers, ...)
 {
   nodes <- servers
   cl <- makeCluster(nodes)
