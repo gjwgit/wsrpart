@@ -38,8 +38,11 @@ function(formula, data, nvars, ...)
   oob.error <- sum((predict(model, data[complete,], type="class") !=
                    data[complete, target])) / length(complete)
 
-   oob.scores <- predict(model, data[complete,])
+  oob.scores <- predict(model, data[complete,])
 
+  # TODO Also return formula and data - unless we are asked not to
+  # include data.
+  
   result <- list(model=model,
                  vars.used=vr,
                  oob.scores=oob.scores,
