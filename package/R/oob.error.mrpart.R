@@ -1,29 +1,12 @@
 oob.error.mrpart <- function(object, data, formula)
- {
-   oob <- sapply(object,function(m) m$oob.scores)
+{
+ oobmat <- .oobMatrix(object, data, formula)
 
-   oobscolist <- list(id = rownames(Reduce(rbind, oob)),
-                      class = apply(Reduce(rbind, oob), 1,
-                        function(x)names(which.max(x))))
+ oobclass <- apply(oobmat, 1, function(x)names(which.max(x)))
 
-   oobscolist$id <- as.integer(oobscolist$id)
+ target <- .getTarget(data,formula)
 
-   oobvotes <- table(oobscolist)
+ forest.oob.error <- sum(oobclass != data[names(oobclass), target])/length(oobclass)
 
-   oobmat <- matrix(as.vector(oobvotes),
-                    nrow=length(levels(as.factor(oobscolist$id))))
-   row.names(oobmat) <- levels(as.factor(oobscolist$id))
-   colnames(oobmat) <- levels(as.factor(oobscolist$class))
-
-   oobclass <- apply(oobmat, 1, function(x)names(which.max(x)))
-
-   # Get target variable
-
-   vars <- as.character(attr(terms(model.frame(formula, data)), "variables"))[-1L]
-   target <- vars[[1]]
-
-   forest.oob.error <-
-     sum(oobclass != data[as.numeric(names(oobclass)), target])/length(oobclass)
-
-   return(forest.oob.error)
+ return(forest.oob.error)
 }
